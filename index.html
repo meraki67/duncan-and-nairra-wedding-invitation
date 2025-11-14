@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Duncan & Nairra Wedding Invitation</title>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<style>
+  /* --- GENERAL RESET --- */
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  /* --- FIXED BACKGROUND VIDEO --- */
+  #bgVideo {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    z-index: -1;
+    background-color: #000;
+  }
+
+  #bgVideo::-webkit-media-controls {
+    display: none !important;
+  }
+
+  /* intro wrapper overlay */
+  #introWrapper {
+    position: fixed;
+    inset: 0;
+    background: transparent; /* make sure not black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 1s ease, visibility 1s ease;
+  }
+
+  #introWrapper.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none; /* ✅ Allow scrolling/clicking again */
+    z-index: -1; /* ✅ Push it behind everything */
+  }
+
+  #introVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* same style as your scroll videos */
+    background: transparent; /* make sure not black */
+    cursor: pointer;
+  }
+
+  /* --- INTRO VIDEO --- */
+  .intro-video {
+    width: 100%;
+    height: 100vh;
+    max-width: 950px;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0);
+    object-fit: contain;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .intro-video.ready {
+    pointer-events: all; /* allows click only after looping begins */
+  }
+
+  .intro-video.fade-out {
+    opacity: 0;
+  }
+
+  #ev1 {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  #ev2 {
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+
+  /* --- SCROLL CONTAINER --- */
+  .scroll-container {
+    width: 100%;
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    position: relative;
+    z-index: 2;
+    display: none;
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+
+  .scroll-page {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    scroll-snap-align: start;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+    padding: 0; /* no excess spacing */
+    gap: 20px; /* uniform spacing inside section */
+    
+  }
+
+  /* --- FOREGROUND VIDEOS --- */
+  .scroll-page video {
+    width: 100%;
+    height: 100vh;
+    max-width: 950px;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0);
+    object-fit: contain;
+    transition: all 0.3s ease-in-out;
+  }
+
+  /* --- MUSIC BUTTON --- */
+  #musicControl {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: none;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease;
+  }
+
+  #musicControl:hover {
+    transform: scale(1.1);
+  }
+
+  #musicIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .special-page {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .special-page video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* base style for invisible clickable zones */
+  .qr-link {
+    position: absolute;
+    width: 150px; /* size ng clickable area */
+    height: 150px;
+    cursor: pointer;
+    z-index: 10;
+    /* optional: for debugging, remove after testing */
+    /* background: rgba(255, 0, 0, 0.3); */
+    /* Add these for breathing border */
+    /*border: 1px solid rgba(0, 255, 255, 0.8);
+    /*box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+    /*border-radius: 12px;*/
+    /*animation: breathe 2.5s ease-in-out infinite;*/
+    transition: transform 0.3s ease;
+  }
+
+  /* Position each QR zone */
+  .qr1 {
+    top: 16.5%;
+    left: 40%;
+    transform: translate(-50%, -50%);
+    border-color: #00ffff;
+  }
+
+  .qr2 {
+    top: 16.5%;
+    left: 60.74%;
+    transform: translate(-50%, -50%);
+    border-color: #ff00ff;
+  }
+
+  .qr3 {
+    top: 51.52%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-color: #00ff88;
+  }
+
+  /* --- MOBILE --- */
+  @media (max-width: 767px) {
+    .scroll-page {
+      padding: 40px 0;
+    }
+    .scroll-page video {
+      width: 95%;
+    }
+
+    .qr-link {
+      width: 80px;  /* smaller area on mobile */
+      height: 80px;
+    }
+
+    .qr1 {
+      top: 32%;
+      left: 38%;
+    }
+
+    .qr2 {
+      top: 32%;
+      left: 65%;
+    }
+
+    .qr3 {
+      top: 51.52%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .special-page video {
+      width: 100%;
+      height: auto;       /* prevent zoom/cropping */
+      object-fit: contain; /* show full video */
+    }
+  }
+
+  /* --- TABLET --- */
+  @media (min-width: 768px) and (max-width: 1031px) {
+    .scroll-page {
+      padding: 80px 0;
+    }
+    .scroll-page video {
+      width: 80%;
+      max-width: 800px;
+    }
+
+    .qr-link {
+      width: 130px;  /* smaller area on mobile */
+      height: 130px;
+    }
+
+    .qr1 {
+      top: 26%;
+      left: 38%;
+    }
+
+    .qr2 {
+      top: 26%;
+      left: 61%;
+    }
+
+    .qr3 {
+      top: 51.52%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .special-page video {
+      width: 100%;
+      height: 100vh;       /* prevent zoom/cropping */
+      object-fit: contain; /* show full video */
+    }
+  }
+
+  /* --- LAPTOP --- */
+  @media (min-width: 1032px) and (max-width: 1439px) {
+    .scroll-page {
+      min-height: 100vh; /* always at least full screen */
+      height: 100vh;      /* ensure it occupies exactly one viewport */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .scroll-page video {
+      width: 70%;
+      max-width: 900px;
+      border-radius: 20px;
+      object-fit: contain;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+
+    /* tiny gap between scroll sections */
+    .scroll-page + .scroll-page {
+      margin-top: 5vh;
+    }
+
+    .scroll-container {
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+    }
+
+    .qr-link {
+      width: 122px;  /* smaller area on mobile */
+      height: 122px;
+    }
+
+    .qr1 {
+      top: 22%;
+      left: 43%;
+    }
+
+    .qr2 {
+      top: 22%;
+      left: 57%;
+    }
+
+    .qr3 {
+      top: 51.52%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .special-page video {
+      width: 100%;
+      height: 100vh;       /* prevent zoom/cropping */
+      object-fit: contain; /* show full video */
+    }
+  }
+
+  /* --- LARGE DESKTOP --- */
+  @media (min-width: 1440px) {
+    .scroll-page {
+      min-height: 100vh;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .scroll-page video {
+      width: 60%;
+      max-width: 1000px;
+      border-radius: 20px;
+      object-fit: contain;
+      box-shadow: 0 5px 20px rgba(0,0,0,0);
+    }
+
+    .scroll-page + .scroll-page {
+      margin-top: 5vh;
+    }
+
+    .scroll-container {
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+    }
+
+    .qr-link {
+      width: 71px;  /* smaller area on mobile */
+      height: 71px;
+    }
+
+    .qr1 {
+      top: 21.56%;
+      left: 45.87%;
+    }
+
+    .qr2 {
+      top: 21.56%;
+      left: 54.76%;
+    }
+
+    .qr3 {
+      top: 51.52%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .special-page video {
+      width: 100%;
+      height: 100vh;       /* prevent zoom/cropping */
+      object-fit: contain; /* show full video */
+    }
+  }
+
+  #musicControl{
+    display: none;
+  }
+
+  /* 🧩 Safari iPhone Play Button Fix */
+  video::-webkit-media-controls,
+  video::-webkit-media-controls-start-playback-button,
+  video::-webkit-media-controls-panel,
+  video::-webkit-media-controls-overlay-play-button,
+  video::-webkit-media-controls-enclosure {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    -webkit-appearance: none !important;
+    pointer-events: none !important;
+  }
+</style>
+
+<body>
+  <!-- Fixed Background Video -->
+  <video muted autoplay loop playsinline preload="auto" webkit-playsinline controlslist="nodownload nofullscreen noremoteplayback" disablePictureInPicture id="bgVideo">
+    <source src="/src/wedVid.mp4" type="video/mp4">
+  </video>
+
+  <!-- Intro Video -->
+  <div id="introWrapper" class="intro-wrapper">
+    <video id="ev1" src="/src/ev1.mp4" muted autoplay loop playsinline controlslist="nodownload nofullscreen noremoteplayback" preload="auto" webkit-playsinline disablePictureInPicture class="intro-video">
+    </video>
+
+    <video id="ev2" src="/src/ev2.mp4"muted autoplay loop playsinline controlslist="nodownload nofullscreen noremoteplayback" preload="auto" webkit-playsinline disablePictureInPicture class="intro-video" style="display: none;">
+    </video>
+  </div>
+
+  <!-- Background Music -->
+  <audio id="bgMusic" src="/src/wedMusic.mp3" loop></audio>
+
+  <div class="scroll-container">
+    <div class="scroll-page"><video src="/src/1.mp4" muted autoplay loop playsinline preload="auto" controlslist="nodownload nofullscreen noremoteplayback" disablePictureInPicture webkit-playsinline></video></div>
+    <div class="scroll-page"><video src="/src/2.mp4" muted autoplay loop playsinline preload="auto" controlslist="nodownload nofullscreen noremoteplayback" disablePictureInPicture webkit-playsinline></video></div>
+    <div class="scroll-page"><video src="/src/3.mp4" muted autoplay loop playsinline preload="auto" controlslist="nodownload nofullscreen noremoteplayback" disablePictureInPicture webkit-playsinline></video></div>
+
+    <div class="scroll-page special-page">
+      <video src="/src/4.mp4" muted autoplay loop playsinline preload="auto" controlslist="nodownload nofullscreen noremoteplayback" disablePictureInPicture webkit-playsinline></video>
+
+      <!-- 3 clickable areas -->
+      <a href="https://maps.app.goo.gl/9DL2rWtDW1Gt6TXh8" target="_blank" class="qr-link qr1"></a>
+      <a href="https://www.waze.com/en/live-map/directions/ph/calabarzon/imus/sarreal-village-clubhouse?place=ChIJW5xPURrTlzMRJ8mxeMzLKZ0" target="_blank" class="qr-link qr2"></a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdBqAfb3ykzA5-jyoCW92rdeBH9gJPNzPoHaECQOKzGpFIEOg/viewform?usp=header" target="_blank" class="qr-link qr3"></a>
+    </div>
+
+    <div class="scroll-page"><video src="/src/5.mp4" muted autoplay loop playsinline preload="auto" webkit-playsinline></video></div>
+  </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const videos = document.querySelectorAll(".scroll-page video");
+  const bgMusic = document.getElementById("bgMusic");
+  const musicBtn = document.getElementById("musicControl");
+  const musicIcon = document.getElementById("musicIcon");
+  let isPlaying = false;
+
+  const ev1 = document.getElementById("ev1");
+  const ev2 = document.getElementById("ev2");
+  const introWrapper = document.getElementById("introWrapper");
+  const mainContent = document.querySelector(".scroll-container");
+
+  ev1.controls = false;  // remove native controls immediately
+  ev1.setAttribute("controls", false);
+
+  // --- NEW: Ensure main content starts hidden for fade-in
+  mainContent.style.opacity = 0;
+  mainContent.style.display = "block"; 
+
+  // --- NEW: Ensure audio is preloaded but not auto-played
+  bgMusic.preload = "auto";
+  bgMusic.load();
+
+  function playMusic() {
+    const bgMusic = document.getElementById("bgMusic");
+    bgMusic.play().catch(err => {
+      console.log("Audio blocked by browser:", err);
+    });
+  }
+
+  // ✅ NEW FUNCTION: Safe music play trigger (Safari/iOS compatible)
+  function tryPlayMusic() {
+    bgMusic.play()
+      .then(() => {
+        console.log("✅ Background music started successfully.");
+        isPlaying = true;
+      })
+      .catch(err => {
+        console.warn("⚠️ Audio blocked until user interaction:", err);
+      });
+  }
+
+  /* ✅ REVISED: EV1 CLICK HANDLER — First user interaction
+     This is the *only* place where we trigger the background music
+     to comply with iOS autoplay policies.
+  */
+  ev1.addEventListener("click", () => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (!isIOS) ev1.muted = false;  // ✅ only unmute on desktop
+    ev1.play().catch(err => console.log("EV1 play error:", err));
+    playMusic();
+
+    // fade ev1 out
+    ev1.style.transition = "opacity 1s ease";
+    ev1.style.opacity = 0;
+    ev1.controls = false;
+
+    setTimeout(() => {
+      ev1.style.display = "none";
+      ev2.style.display = "block";
+      ev2.style.opacity = 0;
+      ev2.style.transition = "opacity 1s ease";
+      setTimeout(() => (ev2.style.opacity = 1), 100);
+    }, 800);
+  });
+
+  /* ✅ REVISED: EV2 CLICK HANDLER — Transition to main content */
+  ev2.addEventListener("click", () => {
+    tryPlayMusic(); 
+    introWrapper.style.transition = "opacity 1s ease";
+    introWrapper.style.opacity = 0;
+
+    setTimeout(() => {
+      introWrapper.remove();
+
+      // Fade in the main content smoothly
+      mainContent.style.transition = "opacity 1s ease";
+      mainContent.style.opacity = 1;
+
+      // ✅ Make sure the scroll content starts at the top
+      mainContent.scrollTo({ top: 0, behavior: "instant" });
+
+      // ✅ Make sure the first video starts from the beginning
+      const firstVideo = document.querySelector(".scroll-page:first-child video");
+      if (firstVideo) {
+        firstVideo.currentTime = 0;
+        firstVideo.play().catch(() => {});
+      }
+
+      // Enable scrolling again
+      document.body.style.overflow = "auto";
+    }, 1000);
+  });
+
+  // --- SCROLL CONTAINER BEHAVIOR ---
+  const scrollContainer = document.querySelector(".scroll-container");
+  let isAtBottom = false;
+
+  if (scrollContainer) {
+    scrollContainer.addEventListener("scroll", () => {
+      const scrollTop = scrollContainer.scrollTop;
+      const containerHeight = scrollContainer.scrollHeight;
+      const viewHeight = scrollContainer.clientHeight;
+      isAtBottom = scrollTop + viewHeight >= containerHeight - 5;
+    });
+
+    // Desktop scroll wheel
+    scrollContainer.addEventListener("wheel", (e) => {
+      if (isAtBottom && e.deltaY > 0) {
+        e.preventDefault();
+        scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+        const firstVideo = document.querySelector(".scroll-page:first-child video");
+        if (firstVideo) setTimeout(() => firstVideo.play().catch(() => {}), 1000);
+      }
+    }, { passive: false });
+
+    // Mobile swipe scroll
+    let startY = 0;
+    scrollContainer.addEventListener("touchstart", (e) => (startY = e.touches[0].clientY));
+    scrollContainer.addEventListener("touchend", (e) => {
+      const endY = e.changedTouches[0].clientY;
+      const swipeUp = startY - endY > 50;
+      if (isAtBottom && swipeUp) {
+        scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+        const firstVideo = document.querySelector(".scroll-page:first-child video");
+        if (firstVideo) setTimeout(() => firstVideo.play().catch(() => {}), 1000);
+      }
+    });
+  }
+
+  // --- AUTOPLAY NEXT VIDEO ON SCROLL ---
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.play().catch(() => {});
+      } else {
+        entry.target.pause();
+        entry.target.currentTime = 0;
+      }
+    });
+  }, { threshold: 0.6 });
+
+  videos.forEach((video, index) => {
+    video.loop = false;
+    observer.observe(video);
+
+    video.addEventListener("ended", () => {
+      const nextPage = videos[index + 1]?.closest(".scroll-page");
+      if (nextPage) {
+        nextPage.scrollIntoView({ behavior: "smooth" });
+      } else {
+        const firstPage = document.querySelector(".scroll-page:first-child");
+        if (firstPage) {
+          firstPage.scrollIntoView({ behavior: "smooth" });
+          setTimeout(() => {
+            const firstVideo = firstPage.querySelector("video");
+            if (firstVideo) firstVideo.play().catch(() => {});
+          }, 1000);
+        }
+      }
+    });
+  });
+
+  // --- MUSIC TOGGLE BUTTON ---
+  if (musicBtn) {
+    musicBtn.addEventListener("click", () => {
+      if (isPlaying) {
+        bgMusic.pause();
+        musicIcon.src = "https://cdn-icons-png.flaticon.com/512/727/727245.png";
+      } else {
+        tryPlayMusic(); // ✅ Use the same safe play function
+        musicIcon.src = "https://cdn-icons-png.flaticon.com/512/727/727240.png";
+      }
+      isPlaying = !isPlaying;
+    });
+  }
+
+  document.querySelectorAll("video").forEach(v => {
+    v.removeAttribute("controls");
+    v.controls = false;
+    v.addEventListener("loadeddata", () => {
+      v.removeAttribute("controls");
+      v.controls = false;
+    });
+  });
+})
+
+document.querySelectorAll("video").forEach(v => {
+  v.removeAttribute("controls");
+  v.controls = false;
+  v.addEventListener("loadeddata", () => {
+    v.removeAttribute("controls");
+    v.controls = false;
+  });
+});;
+</script>
+</body>
+</html>
